@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+    networks:
+      - invoice-net
+
+  backend:
+    build: ./backend
+    ports:
+      - "8888:8888"
+    environment:
+      - APP_CODE=a74f9ef6a5ea4d6399f5e94c5d1ae49d
+      - DATABASE_URL=sqlite:///./invoice.db
+    volumes:
+      - ./backend/data:/app/data  # 持久化数据库
+    restart: unless-stopped
+    networks:
+      - invoice-net
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+    networks:
+      - invoice-net
+
+networks:
+  invoice-net:
+    driver: bridge
