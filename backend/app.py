@@ -1,9 +1,7 @@
-from fastapi import FastAPI, UploadFile, File, Depends
+from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from ocr_processor import process_invoice
-from fastapi_limiter import FastAPILimiter
-from fastapi_limiter.depends import RateLimiter
 
 app = FastAPI()
 
@@ -15,7 +13,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.post("/api/ocr", dependencies=[Depends(RateLimiter(times=10, seconds=60))])
+@app.post("/api/ocr")
 async def ocr_invoice(file: UploadFile = File(...)):
     try:
         # 调用阿里云OCR处理（具体实现见ocr_processor.py）
